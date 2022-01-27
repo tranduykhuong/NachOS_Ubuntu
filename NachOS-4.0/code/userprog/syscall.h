@@ -44,7 +44,7 @@
 #define SC_ReadStr		48
 #define SC_PrintStr		49
 
-
+//chính đẹp trai vcl
 
 #ifndef IN_ASM
 
