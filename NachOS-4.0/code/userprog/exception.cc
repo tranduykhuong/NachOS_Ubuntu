@@ -179,6 +179,27 @@ void ExceptionHandler(ExceptionType which)
 
 			break;
 
+			case SC_Multi:
+			DEBUG(dbgSys, "Add " << kernel->machine->ReadRegister(4) << " + " << kernel->machine->ReadRegister(5) << "\n");
+
+			/* Process SysAdd Systemcall*/
+			int result1;
+			result1 = SysMulti(/* int op1 */ (int)kernel->machine->ReadRegister(4),
+							/* int op2 */ (int)kernel->machine->ReadRegister(5));
+
+			DEBUG(dbgSys, "Add returning with " << result1 << "\n");
+			/* Prepare Result */
+			kernel->machine->WriteRegister(2, (int)result1);
+
+			/* Modify return point */
+			NextPC();
+
+			return;
+
+			ASSERTNOTREACHED();
+
+			break;
+
 		default:
 			cerr << "Unexpected system call " << type << "\n";
 			break;

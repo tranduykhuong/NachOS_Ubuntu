@@ -43,6 +43,7 @@
 #define SC_RandomNum		47
 #define SC_ReadStr		48
 #define SC_PrintStr		49
+#define SC_Multi 50
 
 
 
@@ -67,6 +68,7 @@ void Halt();
  */ 
 
 int Add(int op1, int op2);
+int Multi(int op1, int op2);
 
 /* Address space control operations: Exit, Exec, Execv, and Join */
 

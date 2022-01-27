@@ -58,6 +58,13 @@ Add:
 	j 	$31
 	.end Add
 
+	.globl Multi
+	.ent	Multi
+Multi:
+	addiu $2,$0,SC_Multi
+	syscall
+	j 	$31
+	.end Multi
 
 	.globl Exit
 	.ent	Exit
