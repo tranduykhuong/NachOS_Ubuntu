@@ -139,6 +139,18 @@ void NextPC()
 	kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg) + 4);
 }
 
+void handle_SC_ReadNum() {
+	int result = sysReadNum();
+	kernel->machine->WriteRegister(2, (int)result);
+	return NextPC();
+}
+
+void handle_SC_PrintNum() {
+    int character = kernel->machine->ReadRegister(4);
+    sysPrintNum(character);
+    return NextPC();
+}
+
 void ExceptionHandler(ExceptionType which)
 {
 	int type = kernel->machine->ReadRegister(2);
@@ -179,6 +191,17 @@ void ExceptionHandler(ExceptionType which)
 
 			break;
 
+		case SC_ReadNum:
+			handle_SC_ReadNum();
+			return;
+			ASSERTNOTREACHED();
+			break;
+
+		case SC_PrintNum:
+			handle_SC_PrintNum();
+			return;
+			ASSERTNOTREACHED();
+			break;
 		default:
 			cerr << "Unexpected system call " << type << "\n";
 			break;
