@@ -89,7 +89,7 @@
 #			$(COFF2NOFF) foo.coff foo
 #
 #       Be careful when you copy the commands!  The commands
-# 	must be indented with a *TAB*, not a bunch of spaces.
+# 	must be indented with a TAB, not a bunch of spaces.
 #
 #
 #############################################################################
@@ -112,7 +112,7 @@ ifeq ($(hosttype),unknown)
 PROGRAMS = unknownhost
 else
 # change this if you create a new test program!
-PROGRAMS = add halt shell matmult sort segments multi
+PROGRAMS = add halt shell matmult sort segments readchar printchar randomnum
 endif
 
 all: $(PROGRAMS)
@@ -133,12 +133,26 @@ add: add.o start.o
 	$(LD) $(LDFLAGS) start.o add.o -o add.coff
 	$(COFF2NOFF) add.coff add
 
-multi.o: multi.c
-	$(CC) $(CFLAGS) -c multi.c
+readchar.o: readchar.c
+	$(CC) $(CFLAGS) -c readchar.c
 
-multi: multi.o start.o
-	$(LD) $(LDFLAGS) start.o multi.o -o multi.coff
-	$(COFF2NOFF) multi.coff add
+readchar: readchar.o start.o
+	$(LD) $(LDFLAGS) start.o readchar.o -o readchar.coff
+	$(COFF2NOFF) readchar.coff readchar
+
+printchar.o: printchar.c
+	$(CC) $(CFLAGS) -c printchar.c
+
+printchar: printchar.o start.o
+	$(LD) $(LDFLAGS) start.o printchar.o -o printchar.coff
+	$(COFF2NOFF) printchar.coff printchar
+
+randomnum.o: randomnum.c
+	$(CC) $(CFLAGS) -c randomnum.c
+
+randomnum: randomnum.o start.o
+	$(LD) $(LDFLAGS) start.o randomnum.o -o randomnum.coff
+	$(COFF2NOFF) randomnum.coff randomnum
 
 shell.o: shell.c
 	$(CC) $(CFLAGS) -c shell.c

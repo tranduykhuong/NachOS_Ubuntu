@@ -68,7 +68,9 @@ void Halt();
  */ 
 
 int Add(int op1, int op2);
-int Multi(int op1, int op2);
+char ReadChar();
+void PrintChar(char character);
+int RandomNum();
 
 /* Address space control operations: Exit, Exec, Execv, and Join */
 

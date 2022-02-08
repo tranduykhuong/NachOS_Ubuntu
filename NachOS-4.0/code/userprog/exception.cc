@@ -23,6 +23,7 @@
 
 #include "copyright.h"
 #include "main.h"
+#include "synchconsole.h"
 #include "syscall.h"
 #include "ksyscall.h"
 //----------------------------------------------------------------------
@@ -139,6 +140,30 @@ void NextPC()
 	kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg) + 4);
 }
 
+void SyscallReadChar()
+{
+	char temp;
+	temp=SysReadChar();
+	kernel->machine->WriteRegister(2,temp);
+	NextPC();
+}
+
+void SyscallPrintChar()
+{
+	char temp;
+	temp=kernel->machine->ReadRegister(4);
+	SysPrintChar(temp);
+	NextPC();
+}
+
+void SyscallRandomNum()
+{
+	int temp;
+	temp=SysRandomNum();
+	kernel->machine->WriteRegister(2,temp);
+	NextPC();
+}
+
 void ExceptionHandler(ExceptionType which)
 {
 	int type = kernel->machine->ReadRegister(2);
@@ -178,28 +203,27 @@ void ExceptionHandler(ExceptionType which)
 			ASSERTNOTREACHED();
 
 			break;
-
-			case SC_Multi:
-			DEBUG(dbgSys, "Add " << kernel->machine->ReadRegister(4) << " + " << kernel->machine->ReadRegister(5) << "\n");
-
-			/* Process SysAdd Systemcall*/
-			int result1;
-			result1 = SysMulti(/* int op1 */ (int)kernel->machine->ReadRegister(4),
-							/* int op2 */ (int)kernel->machine->ReadRegister(5));
-
-			DEBUG(dbgSys, "Add returning with " << result1 << "\n");
-			/* Prepare Result */
-			kernel->machine->WriteRegister(2, (int)result1);
-
-			/* Modify return point */
-			NextPC();
-
+		case SC_ReadCh:
+			SyscallReadChar();
 			return;
 
 			ASSERTNOTREACHED();
 
 			break;
+		case SC_PrintCh:
+			SyscallPrintChar();
+			return;
 
+			ASSERTNOTREACHED();
+
+			break;
+		case SC_RandomNum:
+			SyscallRandomNum();
+			return;
+
+			ASSERTNOTREACHED();
+
+			break;
 		default:
 			cerr << "Unexpected system call " << type << "\n";
 			break;

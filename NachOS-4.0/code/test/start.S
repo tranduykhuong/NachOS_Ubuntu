@@ -58,16 +58,34 @@ Add:
 	j 	$31
 	.end Add
 
-	.globl Multi
-	.ent	Multi
-Multi:
-	addiu $2,$0,SC_Multi
+	.globl ReadChar
+	.ent	ReadChar
+ReadChar:
+	addiu $2,$0,SC_ReadCh
 	syscall
 	j 	$31
-	.end Multi
+	.end ReadChar
+
+	.globl PrintChar
+	.ent	PrintChar
+PrintChar:
+	addiu $2,$0,SC_PrintCh
+	syscall
+	j 	$31
+	.end PrintChar
+
+	.globl RandomNum
+	.ent	RandomNum
+RandomNum:
+	addiu $2,$0,SC_RandomNum
+	syscall
+	j 	$31
+	.end RandomNum
 
 	.globl Exit
 	.ent	Exit
+
+
 Exit:
 	addiu $2,$0,SC_Exit
 	syscall

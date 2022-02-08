@@ -26,9 +26,17 @@ int SysAdd(int op1, int op2)
 {
   return op1 + op2;
 }
-int SysMulti(int op1, int op2)
+char khSysReadChar()
 {
-  return op1 + op2;
+  return kernel->synchConsoleIn->GetChar();
+}
+void SysPrintChar(char character)
+{
+  kernel->synchConsoleOut->PutChar(character);
+}
+int SysRandomNum()
+{
+  return random();
 }
 
 
