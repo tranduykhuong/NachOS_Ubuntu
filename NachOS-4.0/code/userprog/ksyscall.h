@@ -184,7 +184,7 @@ int sysReadNum() {
 
 void sysPrintNum(int number) {
   if (number == 0) {
-    return kernel->synchConsoleOut->PutChar('-');
+    return kernel->synchConsoleOut->PutChar('0');
   }
   if (number == INT32_MIN) {
     kernel->synchConsoleOut->PutChar('-');
