@@ -58,6 +58,29 @@ Add:
 	j 	$31
 	.end Add
 
+	.globl Sub
+	.ent	Sub
+Sub:
+	addiu $2,$0,SC_Sub
+	syscall
+	j 	$31
+	.end Sub
+
+	.globl ReadStr
+	.ent	ReadStr
+ReadStr:
+	addiu $2,$0,SC_ReadStr
+	syscall
+	j 	$31
+	.end ReadStr
+
+	.globl PrintStr
+	.ent PrintStr
+PrintStr:
+	addiu $2,$0,SC_PrintStr
+	syscall
+	j	$31
+	.end PrintStr
 
 	.globl Exit
 	.ent	Exit

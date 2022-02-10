@@ -52,11 +52,11 @@
  * Convert user string to system string
  *
  * param addr: addess of user string
- * param _length: set max length of string to convert, 
- 				  if default param to convert all characters of user string
+ * param _length: set max length of string to convert,
+				  if default param to convert all characters of user string
  * return char*
  **/
-char* User2System(int addr, int _length = -2)
+char *User2System(int addr, int _length = -2)
 {
 	_length++;
 	int length = 0, size = 0;
@@ -73,14 +73,16 @@ char* User2System(int addr, int _length = -2)
 		kernel->machine->ReadMem(addr + length, 1, &oneChar);
 		length++;
 
-		//End string '\0'
+		// End string '\0'
 		if (oneChar == '\0')
 			break;
 	};
 
 	// Get min length to convert
-	if (_length == -1) size = length;
-	else size = length < _length ? length : _length;
+	if (_length == -1)
+		size = length;
+	else
+		size = length < _length ? length : _length;
 
 	kernelStr = new char[size];
 	int i;
@@ -103,8 +105,8 @@ char* User2System(int addr, int _length = -2)
  *
  * param str: string to convert
  * param addr: addess of user string
- * param _length: set max length of string to convert, 
- 				  if default param to convert all characters of system string
+ * param _length: set max length of string to convert,
+				  if default param to convert all characters of system string
  */
 void System2User(char *str, int addr, int _length = -1)
 {
@@ -133,7 +135,7 @@ void NextPC()
 	*/
 	kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
 
-	/* set next programm counter for brach execution 
+	/* set next programm counter for brach execution
 		registers[NextPCReg] = pcAfter;
 	*/
 	kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg) + 4);
@@ -179,6 +181,74 @@ void ExceptionHandler(ExceptionType which)
 
 			break;
 
+		case SC_Sub:
+			DEBUG(dbgSys, "Mul " << kernel->machine->ReadRegister(4) << " - " << kernel->machine->ReadRegister(5) << "\n");
+
+			/* Process SysAdd Systemcall*/
+			// int result;
+			result = SysAdd(/* int op1 */ (int)kernel->machine->ReadRegister(4),
+							/* int op2 */ (int)kernel->machine->ReadRegister(5));
+
+			DEBUG(dbgSys, "Sub returning with " << result << "\n");
+			/* Prepare Result */
+			kernel->machine->WriteRegister(2, (int)result);
+
+			/* Modify return point */
+			NextPC();
+
+			return;
+
+			ASSERTNOTREACHED();
+
+			break;
+
+#define MAX_STRING 255
+		case SC_ReadStr:
+			int addStr;
+			addStr = (int)kernel->machine->ReadRegister(4); // Đọc địa chỉ của chuỗi từ thanh ghi
+			int length;
+			length = (int)kernel->machine->ReadRegister(5); // Đọc độ dài chuỗi mà người dùng cho trước từ thanh ghi
+
+			// kiểm tra chiểu dài có vượt quá giới hạn của một chuỗi string hay không?(tối đa 255)
+			if (length > MAX_STRING)
+			{
+				DEBUG(dbgSys, "Chuỗi vượt quá " << MAX_STRING << " kí tự\n");
+				SysHalt();
+			}
+
+			// Xử lí SysReadStr
+			char *buff;
+			buff = SysReadStr(length);
+			System2User(buff, addStr); // chuyển đổi chuỗi hệ thống thành chuỗi người dùng
+			delete[] buff;			   // xóa vùng nhớ để tránh bị rò rỉ
+
+			/* Modify return point */
+			NextPC();
+
+			return;
+
+			ASSERTNOTREACHED();
+
+			break;
+
+		case SC_PrintStr:
+			addStr = (int)kernel->machine->ReadRegister(4); // Đọc địa chỉ của chuỗi từ thanh ghi
+
+			char *buffer;
+			buffer = User2System(addStr); // chuyển đổi chuỗi người dùng thành chuỗi hệ thống
+
+			// Xử lí SysPrintStr
+			SysPrintStr(buffer, strlen(buffer));
+			delete[] buffer; // xóa vùng nhớ để tránh bị rò rỉ
+
+			/* Modify return point */
+			NextPC();
+
+			return;
+
+			ASSERTNOTREACHED();
+
+			break;
 		default:
 			cerr << "Unexpected system call " << type << "\n";
 			break;
