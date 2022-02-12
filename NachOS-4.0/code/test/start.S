@@ -58,6 +58,76 @@ Add:
 	j 	$31
 	.end Add
 
+	.globl Multi
+	.ent	Multi
+Multi:
+	addiu $2,$0,SC_Multi
+	syscall
+	j 	$31
+	.end Multi
+
+
+
+
+	.globl ReadNum
+	.ent	ReadNum
+ReadNum:
+	addiu $2,$0,SC_ReadNum
+	syscall
+	j	$31
+	.end ReadNum
+
+	.globl PrintNum
+	.ent	PrintNum
+PrintNum:
+	addiu $2,$0,SC_PrintNum
+	syscall
+	j	$31
+	.end PrintNum
+
+
+	.globl ReadChar
+	.ent	ReadChar
+ReadChar:
+	addiu $2,$0,SC_ReadCh
+	syscall
+	j 	$31
+	.end ReadChar
+
+	.globl PrintChar
+	.ent	PrintChar
+PrintChar:
+	addiu $2,$0,SC_PrintCh
+	syscall
+	j 	$31
+	.end PrintChar
+
+	.globl RandomNum
+	.ent	RandomNum
+RandomNum:
+	addiu $2,$0,SC_RandomNum
+	syscall
+	j 	$31
+	.end RandomNum
+
+
+	.globl ReadStr
+	.ent	ReadStr
+ReadStr:
+	addiu $2,$0,SC_ReadStr
+	syscall
+	j 	$31
+	.end ReadStr
+
+	.globl PrintStr
+	.ent PrintStr
+PrintStr:
+	addiu $2,$0,SC_PrintStr
+	syscall
+	j	$31
+	.end PrintStr
+
+
 
 	.globl Exit
 	.ent	Exit

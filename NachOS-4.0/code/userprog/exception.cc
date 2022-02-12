@@ -48,15 +48,17 @@
 //	is in machine.h.
 //----------------------------------------------------------------------
 
+#define MAX_STRING 255
+
 /**
  * Convert user string to system string
  *
  * param addr: addess of user string
- * param _length: set max length of string to convert, 
- 				  if default param to convert all characters of user string
+ * param _length: set max length of string to convert,
+				  if default param to convert all characters of user string
  * return char*
  **/
-char* User2System(int addr, int _length = -2)
+char *User2System(int addr, int _length = -2)
 {
 	_length++;
 	int length = 0, size = 0;
@@ -73,14 +75,16 @@ char* User2System(int addr, int _length = -2)
 		kernel->machine->ReadMem(addr + length, 1, &oneChar);
 		length++;
 
-		//End string '\0'
+		// End string '\0'
 		if (oneChar == '\0')
 			break;
 	};
 
 	// Get min length to convert
-	if (_length == -1) size = length;
-	else size = length < _length ? length : _length;
+	if (_length == -1)
+		size = length;
+	else
+		size = length < _length ? length : _length;
 
 	kernelStr = new char[size];
 	int i;
@@ -103,8 +107,8 @@ char* User2System(int addr, int _length = -2)
  *
  * param str: string to convert
  * param addr: addess of user string
- * param _length: set max length of string to convert, 
- 				  if default param to convert all characters of system string
+ * param _length: set max length of string to convert,
+				  if default param to convert all characters of system string
  */
 void System2User(char *str, int addr, int _length = -1)
 {
@@ -123,20 +127,91 @@ void System2User(char *str, int addr, int _length = -1)
 // Increasing PC
 void NextPC()
 {
-	/* set previous programm counter (debugging only)
-		registers[PrevPCReg] = registers[PCReg];
-	*/
+	/* registers[PrevPCReg] = registers[PCReg]; */
 	kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
 
-	/* set programm counter to next instruction (all Instructions are 4 byte wide)
-		registers[PCReg] = registers[NextPCReg]
-	*/
+	/* registers[PCReg] = registers[NextPCReg]; */
 	kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
 
-	/* set next programm counter for brach execution 
-		registers[NextPCReg] = pcAfter;
-	*/
+	/* registers[NextPCReg] = pcAfter; */
 	kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg) + 4);
+}
+
+void SyscallReadNum_Handler()
+{
+	int result = SysReadNum();
+	kernel->machine->WriteRegister(2, (int)result);
+	return NextPC();
+}
+
+void SyscallPrintNum_Handler()
+{
+	int character = kernel->machine->ReadRegister(4);
+	SysPrintNum(character);
+	return NextPC();
+}
+
+void SyscallReadChar_Handler()
+{
+	char temp;
+	temp = SysReadChar();
+	kernel->machine->WriteRegister(2, temp);
+	NextPC();
+}
+
+void SyscallPrintChar_Handler()
+{
+	char temp;
+	temp = kernel->machine->ReadRegister(4);
+	SysPrintChar(temp);
+	NextPC();
+}
+
+void SyscallRandomNum_Handler()
+{
+	int temp;
+	temp = SysRandomNum();
+	kernel->machine->WriteRegister(2, temp);
+	NextPC();
+}
+
+void SyscallReadString_Handler()
+{
+	int addStr;
+	addStr = (int)kernel->machine->ReadRegister(4); // Đọc địa chỉ của chuỗi từ thanh ghi
+	int length;
+	length = (int)kernel->machine->ReadRegister(5); // Đọc độ dài chuỗi mà người dùng cho trước từ thanh ghi
+
+	// kiểm tra chiểu dài có vượt quá giới hạn của một chuỗi string hay không?(tối đa 255)
+	if (length > MAX_STRING)
+	{
+		DEBUG(dbgSys, "Chuỗi vượt quá " << MAX_STRING << " kí tự\n");
+		SysHalt();
+	}
+
+	// Xử lí SysReadStr
+	char *buff;
+	buff = SysReadStr(length);
+	System2User(buff, addStr); // chuyển đổi chuỗi hệ thống thành chuỗi người dùng
+	delete[] buff;			   // xóa vùng nhớ để tránh bị rò rỉ
+
+	/* Modify return point */
+	NextPC();
+}
+
+void SyscallPrintString_Handler()
+{
+	int addStr = (int)kernel->machine->ReadRegister(4); // Đọc địa chỉ của chuỗi từ thanh ghi
+
+	char *buffer;
+	buffer = User2System(addStr); // chuyển đổi chuỗi người dùng thành chuỗi hệ thống
+
+	// Xử lí SysPrintStr
+	SysPrintStr(buffer, strlen(buffer));
+	delete[] buffer; // xóa vùng nhớ để tránh bị rò rỉ
+
+	/* Modify return point */
+	NextPC();
 }
 
 void ExceptionHandler(ExceptionType which)
@@ -147,6 +222,24 @@ void ExceptionHandler(ExceptionType which)
 
 	switch (which)
 	{
+	case NoException: // return control to kernel
+		DEBUG(dbgSys, "Switch to system mode\n");
+		kernel->interrupt->setStatus(SystemMode);
+		break;
+
+	case PageFaultException:
+	case ReadOnlyException:
+	case BusErrorException:
+	case AddressErrorException:
+	case OverflowException:
+	case IllegalInstrException:
+	case NumExceptionTypes:
+		DEBUG(dbgAddr, "\nRuntime error\n");
+		cerr << "Error " << which << " occured\n";
+		SysHalt();
+		ASSERTNOTREACHED();
+		break;
+
 	case SyscallException:
 		switch (type)
 		{
@@ -172,11 +265,65 @@ void ExceptionHandler(ExceptionType which)
 
 			/* Modify return point */
 			NextPC();
-
 			return;
-
 			ASSERTNOTREACHED();
+			break;
 
+		case SC_Multi:
+			DEBUG(dbgSys, "Add " << kernel->machine->ReadRegister(4) << " + " << kernel->machine->ReadRegister(5) << "\n");
+
+			/* Process SysAdd Systemcall*/
+			int result2;
+			result2 = SysMulti((int)kernel->machine->ReadRegister(4),
+							   (int)kernel->machine->ReadRegister(5));
+
+			DEBUG(dbgSys, "Add returning with " << result2 << "\n");
+			kernel->machine->WriteRegister(2, (int)result2);
+			NextPC();
+			return;
+			ASSERTNOTREACHED();
+			break;
+
+		case SC_ReadNum:
+			SyscallReadNum_Handler();
+			return;
+			ASSERTNOTREACHED();
+			break;
+
+		case SC_PrintNum:
+			SyscallPrintNum_Handler();
+			return;
+			ASSERTNOTREACHED();
+			break;
+
+		case SC_ReadCh:
+			SyscallReadChar_Handler();
+			return;
+			ASSERTNOTREACHED();
+			break;
+
+		case SC_PrintCh:
+			SyscallPrintChar_Handler();
+			return;
+			ASSERTNOTREACHED();
+			break;
+
+		case SC_RandomNum:
+			SyscallRandomNum_Handler();
+			return;
+			ASSERTNOTREACHED();
+			break;
+
+		case SC_ReadStr:
+			SyscallReadString_Handler();
+			return;
+			ASSERTNOTREACHED();
+			break;
+
+		case SC_PrintStr:
+			SyscallPrintString_Handler();
+			return;
+			ASSERTNOTREACHED();
 			break;
 
 		default:
