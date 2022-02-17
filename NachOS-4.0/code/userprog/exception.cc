@@ -137,44 +137,6 @@ void NextPC()
 	kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg) + 4);
 }
 
-void SyscallReadNum_Handler()
-{
-	int result = SysReadNum();
-	kernel->machine->WriteRegister(2, (int)result);
-	return NextPC();
-}
-
-void SyscallPrintNum_Handler()
-{
-	int character = kernel->machine->ReadRegister(4);
-	SysPrintNum(character);
-	return NextPC();
-}
-
-void SyscallReadChar_Handler()
-{
-	char temp;
-	temp = SysReadChar();
-	kernel->machine->WriteRegister(2, temp);
-	NextPC();
-}
-
-void SyscallPrintChar_Handler()
-{
-	char temp;
-	temp = kernel->machine->ReadRegister(4);
-	SysPrintChar(temp);
-	NextPC();
-}
-
-void SyscallRandomNum_Handler()
-{
-	int temp;
-	temp = SysRandomNum();
-	kernel->machine->WriteRegister(2, temp);
-	NextPC();
-}
-
 void SyscallReadString_Handler()
 {
 	int addStr;
@@ -228,17 +190,47 @@ void ExceptionHandler(ExceptionType which)
 		break;
 
 	case PageFaultException:
-	case ReadOnlyException:
-	case BusErrorException:
-	case AddressErrorException:
-	case OverflowException:
-	case IllegalInstrException:
-	case NumExceptionTypes:
-		DEBUG(dbgAddr, "\nRuntime error\n");
-		cerr << "Error " << which << " occured\n";
-		SysHalt();
+        DEBUG('a', "\nNo valid translation found.");
+        printf("\n\nNo valid translation found.");
+        SysHalt();
 		ASSERTNOTREACHED();
-		break;
+        break;
+    case ReadOnlyException:
+        DEBUG('a', "\nWrite attempted to page marked \"read-only\".");
+        printf("\n\nWrite attempted to page marked \"read-only\".");
+        SysHalt();
+		ASSERTNOTREACHED();
+        break;
+    case BusErrorException:
+        DEBUG('a', "\nTranslation resulted in an invalid physical address.");
+        printf("\n\nTranslation resulted in an invalid physical address.");
+        SysHalt();
+		ASSERTNOTREACHED();
+        break;
+    case AddressErrorException:
+        DEBUG('a', "\nUnaligned reference or one that was beyond the end of the address space.");
+        printf("\n\nUnaligned reference or one that was beyond the end of the address space.");
+        SysHalt();
+		ASSERTNOTREACHED();
+        break;
+    case OverflowException:
+        DEBUG('a', "\nInteger overflow in add or sum.");
+        printf("\n\nInteger overflow in add or sum.");
+        SysHalt();
+		ASSERTNOTREACHED();
+        break;
+    case IllegalInstrException:
+        DEBUG('a', "\nUnimplemented or reserved instr.");
+        printf("\n\nUnimplemented or reserved instr.");
+        SysHalt();
+		ASSERTNOTREACHED();
+        break;
+    case NumExceptionTypes:
+		DEBUG('a', "\nNumber exception.");
+        printf("\n\nNumber exception.");
+        SysHalt();
+		ASSERTNOTREACHED();
+        break;
 
 	case SyscallException:
 		switch (type)
@@ -285,34 +277,57 @@ void ExceptionHandler(ExceptionType which)
 			break;
 
 		case SC_ReadNum:
-			SyscallReadNum_Handler();
+		{
+			int result3 = SysReadNum();
+			kernel->machine->WriteRegister(2, (int)result3);
+			NextPC();
 			return;
 			ASSERTNOTREACHED();
 			break;
+		}
 
 		case SC_PrintNum:
-			SyscallPrintNum_Handler();
+		{
+			int character = kernel->machine->ReadRegister(4);
+			SysPrintNum(character);
+			NextPC();
 			return;
 			ASSERTNOTREACHED();
 			break;
+		}
 
 		case SC_ReadCh:
-			SyscallReadChar_Handler();
+		{
+			char temp;
+			temp = SysReadChar();
+			kernel->machine->WriteRegister(2, temp);
+			NextPC();
 			return;
 			ASSERTNOTREACHED();
 			break;
+		}
 
 		case SC_PrintCh:
-			SyscallPrintChar_Handler();
+		{
+			char temp;
+			temp = kernel->machine->ReadRegister(4);
+			SysPrintChar(temp);
+			NextPC();
 			return;
 			ASSERTNOTREACHED();
 			break;
+		}
 
 		case SC_RandomNum:
-			SyscallRandomNum_Handler();
+		{
+			int temp;
+			temp = SysRandomNum();
+			kernel->machine->WriteRegister(2, temp);
+			NextPC();
 			return;
 			ASSERTNOTREACHED();
 			break;
+		}
 
 		case SC_ReadStr:
 			SyscallReadString_Handler();

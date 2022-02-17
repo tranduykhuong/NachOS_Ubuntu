@@ -9,7 +9,7 @@
 
 int main()
 {
-  PrintStr("Chinh dep trai\n");
+  PrintStr("Team ...\n");
   Halt();
   /* not reached */
 }

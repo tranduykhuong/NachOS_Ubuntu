@@ -8,10 +8,13 @@
 
 #include "syscall.h"
 
-char readstr[256];
 int main()
 {
-  ReadStr(readstr, 12);
+  char readstr[256];
+  int n;
+  PrintStr("Nhap chieu dai chuoi: ");
+  n = ReadNum();
+  ReadStr(readstr, n);
   PrintStr(readstr);
   Halt();
   /* not reached */

@@ -35,18 +35,9 @@ char isBlank(char c)
  **/
 
 // These macros must exactly match those in the Windows SDK's intsafe.h.
-#define INT8_MIN (-127i8 - 1)
-#define INT16_MIN (-32767i16 - 1)
 #define INT32_MIN (-2147483647 - 1)
-#define INT64_MIN (-9223372036854775807i64 - 1)
-#define INT8_MAX 127i8
-#define INT16_MAX 32767i16
-#define INT32_MAX 2147483647i32
-#define INT64_MAX 9223372036854775807i64
-#define UINT8_MAX 0xffui8
-#define UINT16_MAX 0xffffui16
-#define UINT32_MAX 0xffffffffui32
-#define UINT64_MAX 0xffffffffffffffffui64
+#define INT32_MAX (2147483647)
+
 
 void SysHalt()
 {
@@ -63,95 +54,56 @@ int SysMulti(int op1, int op2)
   return op1 * op2;
 }
 
-bool compareNum_String(int integer, const char *s)
+int SysReadNum()
 {
-  if (integer == 0)
-    return strcmp(s, "0") == 0;
-
-  int length = strlen(s);
-
-  if (integer < 0 && s[0] != '-')
-  {
-    return false;
-  }
-  if (integer < 0)
-  {
-    s++, --length, integer = -integer;
-  }
-
-  while (integer > 0)
-  {
-    int digit = integer % 10;
-    if ((s[length - 1] == '0') != digit)
-    {
-      return false;
-    }
-    --length;
-    integer /= 10;
-  }
-  return length == 0;
-}
-
-void readUntilBlank()
-{
+  // listen and read until blank
   memset(_numberBuffer, 0, sizeof(_numberBuffer));
   char c = kernel->synchConsoleIn->GetChar();
-  if (c == EOF)
+  if (c == EOF || isBlank(c))
   {
     DEBUG(dbgSys, "Unexpected end of file - number expected");
-    return;
-  }
-
-  if (isBlank(c))
-  {
-    DEBUG(dbgSys, "Unexpected end of file - number expected");
-    return;
+    return 0;
   }
 
   int n = 0;
 
-  while (!(isBlank(c) || c == EOF))
+  while (!(isBlank(c) || c != EOF))
   {
     _numberBuffer[n++] = c;
     if (n > MAX_NUM_LENGTH)
     {
       DEBUG(dbgSys, "Number is too long");
-      return;
+      return 0;
     }
     c = kernel->synchConsoleIn->GetChar();
   }
-}
-
-int SysReadNum()
-{
-  readUntilBlank();
+  _numberBuffer[n] = '\0';
 
   int length = strlen(_numberBuffer);
   // Read nothing -> return 0
   if (length == 0)
-  {
     return 0;
-  }
-  // Check comment below to understand this line of code
+
+  // Check number is MIN_INT
   if (strcmp(_numberBuffer, "-2147483648") == 0)
-  {
     return INT32_MIN;
-  }
+
   bool _negative = (_numberBuffer[0] == '-');
-  int zero = 0;
+  int zero = 0; // check number zero at the begining of the string
   bool is_Leading = true;
   int number = 0;
   for (int i = _negative; i < length; ++i)
   {
     char c = _numberBuffer[i];
+
     if (c == '0' && is_Leading)
-    {
       ++zero;
-    }
     else
-    {
       is_Leading = false;
-    }
+
+    if (number > 214748364 || (number == 214748364 && c > '7'))
+      return 0;
+
     if (c < '0' || c > '9')
     {
       DEBUG(dbgSys, "Ecpected number but " << _numberBuffer << " found");
@@ -160,39 +112,18 @@ int SysReadNum()
     number = number * 10 + (c - '0');
   }
 
-  // 00            01 or -0
+  if (_negative)
+    number = -number;
+
+  // 00            01 or -0 or -01
   if (zero > 1 || (zero && (number || _negative)))
   {
     DEBUG(dbgSys, "Expected number but " << _numberBuffer << " found");
-    return 0;
-  }
-
-  if (_negative)
-  {
-    /*
-     * This is why we need to handle -2147483648 individually:
-     * 2147483648 is larger than the range of int32
-     */
-    number = -number;
-  }
-  // It's safe to return directly if the number is small
-  if (length <= MAX_NUM_LENGTH - 2)
-  {
     return number;
   }
 
-  /* We need to make sure that number is equal to the number in the buffer. */
-  if (compareNum_String(number, _numberBuffer))
-  {
-    return number;
-  }
-  else
-  {
-    DEBUG(dbgSys, "Expected number but " << _numberBuffer << " found");
-  }
-  return 0;
+  return number;
 }
-
 
 void SysPrintNum(int number)
 {
@@ -229,7 +160,6 @@ void SysPrintNum(int number)
   }
 }
 
-
 char SysReadChar()
 {
   return kernel->synchConsoleIn->GetChar();
@@ -240,6 +170,7 @@ void SysPrintChar(char character)
 }
 int SysRandomNum()
 {
+  srand(time(0));
   return random();
 }
 
