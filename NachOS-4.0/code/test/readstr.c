@@ -14,6 +14,7 @@ int main()
   int n;
   PrintStr("Nhap chieu dai chuoi: ");
   n = ReadNum();
+  PrintStr("Nhap chuoi: ");
   ReadStr(readstr, n);
   PrintStr(readstr);
   Halt();

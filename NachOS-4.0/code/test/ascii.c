@@ -4,7 +4,7 @@
 int main()
 {
     int i, temp;
-    PrintStr("Bang ma ASCII cac\n");
+    PrintStr("Bang ma ASCII:\n");
     for (i = 32; i <= 126; i++)
     {
         temp = i % 10;
