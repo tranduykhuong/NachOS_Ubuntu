@@ -67,7 +67,7 @@ int SysReadNum()
 
   int n = 0;
 
-  while (!(isBlank(c) || c != EOF))
+  while (!(isBlank(c) || c == EOF))
   {
     _numberBuffer[n++] = c;
     if (n > MAX_NUM_LENGTH)
@@ -79,7 +79,7 @@ int SysReadNum()
   }
   _numberBuffer[n] = '\0';
 
-  int length = strlen(_numberBuffer);
+  int length = n;
   // Read nothing -> return 0
   if (length == 0)
     return 0;
