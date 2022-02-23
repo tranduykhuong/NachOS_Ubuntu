@@ -11,8 +11,11 @@
 int
 main()
 {
-  char temp=ReadChar();
+  char temp;
+  PrintStr("Enter a character: ");
+  temp=ReadChar();
   PrintChar(temp);
+  PrintChar('\n');
   Halt();
   /* not reached */
 }

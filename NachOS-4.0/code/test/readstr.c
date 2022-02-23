@@ -12,11 +12,12 @@ int main()
 {
   char readstr[256];
   int n;
-  PrintStr("Nhap chieu dai chuoi: ");
+  PrintStr("Enter string's length: ");
   n = ReadNum();
-  PrintStr("Nhap chuoi: ");
+  PrintStr("Enter string: ");
   ReadStr(readstr, n);
   PrintStr(readstr);
+  PrintChar('\n');
   Halt();
   /* not reached */
 }

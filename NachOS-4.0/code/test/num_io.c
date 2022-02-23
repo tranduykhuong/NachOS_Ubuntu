@@ -8,6 +8,8 @@
 #include "syscall.h"
 
 int main() { 
+  PrintStr("Enter interger number: ");
   PrintNum(ReadNum());
+  PrintChar('\n');
   Halt();
 }
