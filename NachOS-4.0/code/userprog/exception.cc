@@ -23,6 +23,7 @@
 
 #include "copyright.h"
 #include "main.h"
+#include "synchconsole.h"
 #include "syscall.h"
 #include "ksyscall.h"
 //----------------------------------------------------------------------

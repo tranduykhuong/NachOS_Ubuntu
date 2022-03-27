@@ -12,7 +12,6 @@
 #define __USERPROG_KSYSCALL_H__
 
 #include "kernel.h"
-#include "synchconsole.h"
 #include <stdlib.h>
 
 #define LF ((char)10)
@@ -37,7 +36,6 @@ char isBlank(char c)
 // These macros must exactly match those in the Windows SDK's intsafe.h.
 #define INT32_MIN (-2147483647 - 1)
 #define INT32_MAX (2147483647)
-
 
 void SysHalt()
 {
