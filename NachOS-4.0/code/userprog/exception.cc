@@ -177,6 +177,38 @@ void SyscallPrintString_Handler()
 	NextPC();
 }
 
+void SyscallReadFile_Handler()
+{
+	int address = kernel->machine->ReadRegister(4);
+	int numCharCount = kernel->machine->ReadRegister(5);
+	int fileId = kernel->machine->ReadRegister(6);
+	char *buffer = User2System(address, numCharCount);
+
+	DEBUG(dbgFile, "Read " << numCharCount << " characters from file " << fileId << "\n");
+
+	kernel->machine->WriteRegister(2, SysReadFile(buffer, numCharCount, fileId));
+	System2User(buffer, address, numCharCount);
+
+	delete[] buffer;
+	return NextPC();
+}
+
+void SyscallWriteFile_Handler()
+{
+	int address = kernel->machine->ReadRegister(4);
+	int numCharCount = kernel->machine->ReadRegister(5);
+	int fileId = kernel->machine->ReadRegister(6);
+	char *buffer = User2System(address, numCharCount);
+
+	DEBUG(dbgFile, "Write " << numCharCount << " characters to the file " << fileId << "\n");
+
+	kernel->machine->WriteRegister(2, SysWriteFile(buffer, numCharCount, fileId));
+	System2User(buffer, address, numCharCount);
+
+	delete[] buffer;
+	return NextPC();
+}
+
 void ExceptionHandler(ExceptionType which)
 {
 	int type = kernel->machine->ReadRegister(2);
@@ -191,47 +223,47 @@ void ExceptionHandler(ExceptionType which)
 		break;
 
 	case PageFaultException:
-        DEBUG('a', "\nNo valid translation found.");
-        printf("\n\nNo valid translation found.");
-        SysHalt();
+		DEBUG('a', "\nNo valid translation found.");
+		printf("\n\nNo valid translation found.");
+		SysHalt();
 		ASSERTNOTREACHED();
-        break;
-    case ReadOnlyException:
-        DEBUG('a', "\nWrite attempted to page marked \"read-only\".");
-        printf("\n\nWrite attempted to page marked \"read-only\".");
-        SysHalt();
+		break;
+	case ReadOnlyException:
+		DEBUG('a', "\nWrite attempted to page marked \"read-only\".");
+		printf("\n\nWrite attempted to page marked \"read-only\".");
+		SysHalt();
 		ASSERTNOTREACHED();
-        break;
-    case BusErrorException:
-        DEBUG('a', "\nTranslation resulted in an invalid physical address.");
-        printf("\n\nTranslation resulted in an invalid physical address.");
-        SysHalt();
+		break;
+	case BusErrorException:
+		DEBUG('a', "\nTranslation resulted in an invalid physical address.");
+		printf("\n\nTranslation resulted in an invalid physical address.");
+		SysHalt();
 		ASSERTNOTREACHED();
-        break;
-    case AddressErrorException:
-        DEBUG('a', "\nUnaligned reference or one that was beyond the end of the address space.");
-        printf("\n\nUnaligned reference or one that was beyond the end of the address space.");
-        SysHalt();
+		break;
+	case AddressErrorException:
+		DEBUG('a', "\nUnaligned reference or one that was beyond the end of the address space.");
+		printf("\n\nUnaligned reference or one that was beyond the end of the address space.");
+		SysHalt();
 		ASSERTNOTREACHED();
-        break;
-    case OverflowException:
-        DEBUG('a', "\nInteger overflow in add or sum.");
-        printf("\n\nInteger overflow in add or sum.");
-        SysHalt();
+		break;
+	case OverflowException:
+		DEBUG('a', "\nInteger overflow in add or sum.");
+		printf("\n\nInteger overflow in add or sum.");
+		SysHalt();
 		ASSERTNOTREACHED();
-        break;
-    case IllegalInstrException:
-        DEBUG('a', "\nUnimplemented or reserved instr.");
-        printf("\n\nUnimplemented or reserved instr.");
-        SysHalt();
+		break;
+	case IllegalInstrException:
+		DEBUG('a', "\nUnimplemented or reserved instr.");
+		printf("\n\nUnimplemented or reserved instr.");
+		SysHalt();
 		ASSERTNOTREACHED();
-        break;
-    case NumExceptionTypes:
+		break;
+	case NumExceptionTypes:
 		DEBUG('a', "\nNumber exception.");
-        printf("\n\nNumber exception.");
-        SysHalt();
+		printf("\n\nNumber exception.");
+		SysHalt();
 		ASSERTNOTREACHED();
-        break;
+		break;
 
 	case SyscallException:
 		switch (type)
@@ -338,6 +370,18 @@ void ExceptionHandler(ExceptionType which)
 
 		case SC_PrintStr:
 			SyscallPrintString_Handler();
+			return;
+			ASSERTNOTREACHED();
+			break;
+
+		case SC_Read:
+			SyscallReadFile_Handler();
+			return;
+			ASSERTNOTREACHED();
+			break;
+
+		case SC_Write:
+			SyscallWriteFile_Handler();
 			return;
 			ASSERTNOTREACHED();
 			break;

@@ -188,4 +188,18 @@ void SysPrintStr(char *buffer, int length)
     kernel->synchConsoleOut->PutChar(buffer[i]);
 }
 
+int SysReadFile(char *buffer, int numBytesChar, int fileId)
+{
+  if (fileId == 0)
+    return kernel->synchConsoleIn->GetString(buffer, numBytesChar);
+  return kernel->fileSystem->ReadFile(buffer, numBytesChar, fileId);
+}
+
+int SysWriteFile(char *buffer, int numBytesChar, int fileId)
+{
+  if (fileId == 1)
+    return kernel->synchConsoleOut->PutString(buffer, numBytesChar);
+  return kernel->fileSystem->WriteFile(buffer, numBytesChar, fileId);
+}
+
 #endif /* ! __USERPROG_KSYSCALL_H__ */
