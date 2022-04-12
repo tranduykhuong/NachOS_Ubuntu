@@ -31,19 +31,50 @@
 // of liability and disclaimer of warranty provisions.
 
 #ifndef FS_H
+
 #define FS_H
 
 #include "copyright.h"
 #include "sysdep.h"
 #include "openfile.h"
-
+#define MAX_FILE 10
 #ifdef FILESYS_STUB 		// Temporarily implement file system calls as 
 				// calls to UNIX, until the real file system
 				// implementation is available
 class FileSystem {
+   private:
+	struct FileDescription
+	{
+		OpenFile *open_file;
+		char *name;
+	};
   public:
-    FileSystem() {}
-
+	FileDescription* open_f;
+	 FileSystem()
+	{
+		open_f = new FileDescription[MAX_FILE];
+		for  (int i = 0; i < MAX_FILE; i++)
+		{
+			open_f[i].open_file = NULL;
+			open_f[i].name = NULL;
+		}
+	}
+	~FileSystem()
+	{
+		for (int i = 0; i < MAX_FILE; i++) {
+			if (open_f[i].open_file != NULL)
+			{
+				delete open_f[i].open_file;
+				open_f[i].open_file = NULL;
+			}
+            if (open_f[i].name != NULL)
+			{
+				delete open_f[i].name;
+				open_f[i].name = NULL;
+			}
+        }
+        delete[] open_f;
+	}
     bool Create(char *name) {
 	int fileDescriptor = OpenForWrite(name);
 
@@ -51,6 +82,7 @@ class FileSystem {
 	Close(fileDescriptor); 
 	return TRUE; 
 	}
+	
 
     OpenFile* Open(char *name) {
 	  int fileDescriptor = OpenForReadWrite(name, FALSE);
@@ -58,7 +90,45 @@ class FileSystem {
 	  if (fileDescriptor == -1) return NULL;
 	  return new OpenFile(fileDescriptor);
       }
+	  
+	int openFile(char * fileName)
+		{
+			int freeSlot = -1, fileDescriptor;
+			for (int i =  2; i < MAX_FILE; i++)
+			{
+				if (open_f[i].open_file == NULL)
+				{
+					open_f[i].name = new char[strlen(fileName) + 1];
+					for (int j = 0; j < strlen(fileName); j++)
+					{
+						open_f[i].name[j] = fileName[j];
+					}
+					open_f[i].name[strlen(fileName)] = '\0';
+					freeSlot = i;
+					break;
+				}
+			}
+			if (freeSlot == -1)
+				 return -1; // if file table is full, return -1
+			fileDescriptor = OpenForReadWrite(fileName, FALSE); // create sector
+			if (fileDescriptor == -1)
+				 return -1; // can not create file, return -1
+			open_f[freeSlot].open_file = new OpenFile(fileDescriptor);
+			return freeSlot;
+		}
 
+	int Close(int index)
+		{
+			if (index < 2 || index >= MAX_FILE) return -1;
+      		if (open_f[index].open_file) {
+				delete open_f[index].open_file;
+				open_f[index].open_file = NULL;
+				delete open_f[index].name;
+				open_f[index].name = NULL;
+				return 0;
+      		}
+  			return -1;
+		}
     bool Remove(char *name) { return Unlink(name) == 0; }
 
 };

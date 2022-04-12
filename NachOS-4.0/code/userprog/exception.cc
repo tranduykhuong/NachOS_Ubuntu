@@ -177,6 +177,35 @@ void SyscallPrintString_Handler()
 	NextPC();
 }
 
+void SyscallCreateFile()
+{
+	int temp;
+	char*filename;
+	temp=kernel->machine->ReadRegister(4);
+	filename=User2System(temp);
+	if(Create(filename))
+		kernel->machine->WriteRegister(2,0);
+	else
+		kernel->machine->WriteRegister(2,-1);
+}
+
+void SyscallOpenFile()
+{
+	char *filename; // file name
+	int id; // id of file
+	filename = User2System(kernel->machine->ReadRegister(4)); // convert from user's buffer to kernel's buffer
+	id = (int)kernel->fileSystem->openFile(filename); // get id of that file
+	kernel->machine->WriteRegister(2, id);
+	delete[] filename;
+}
+
+void SyscallCloseFile()
+{
+	int id;
+	id = kernel->machine->ReadRegister(4); // read id of file
+	kernel->machine->WriteRegister(2, kernel->fileSystem->Close(id));
+}
+
 void ExceptionHandler(ExceptionType which)
 {
 	int type = kernel->machine->ReadRegister(2);
@@ -338,6 +367,24 @@ void ExceptionHandler(ExceptionType which)
 
 		case SC_PrintStr:
 			SyscallPrintString_Handler();
+			return;
+			ASSERTNOTREACHED();
+			break;
+		case SC_CreateFile:
+			SyscallCreateFile();
+			NextPC();
+			return;
+			ASSERTNOTREACHED();
+			break;
+		case SC_OpenFile:
+			SyscallOpenFile();
+			NextPC();
+			return;
+			ASSERTNOTREACHED();
+			break;
+		case SC_CloseFile:
+			SyscallCloseFile();
+			NextPC();
 			return;
 			ASSERTNOTREACHED();
 			break;

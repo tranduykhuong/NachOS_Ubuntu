@@ -188,4 +188,26 @@ void SysPrintStr(char *buffer, int length)
     kernel->synchConsoleOut->PutChar(buffer[i]);
 }
 
+int Create(char*FileName)
+{
+    int FileLenght=strlen(FileName);
+    if(FileLenght==0)
+    {
+      DEBUG(dbgSys,"\nFile name can not be empty"); // Ten file khong duoc bo trong
+      return 0;
+    }
+    else
+    {
+      DEBUG(dbgSys,"\nFinish reading filename");
+      if(!kernel->fileSystem->Create(FileName))
+      {
+        DEBUG(dbgSys,"\nError create file");
+        return 0;
+      }
+      else
+        return 1;
+    }
+
+}
+
 #endif /* ! __USERPROG_KSYSCALL_H__ */

@@ -43,8 +43,11 @@
 #define SC_RandomNum		47
 #define SC_ReadStr		48
 #define SC_PrintStr		49
-
 #define SC_Multi 50
+#define SC_CreateFile 51
+#define SC_OpenFile 52
+#define SC_CloseFile 53
+
 
 #ifndef IN_ASM
 

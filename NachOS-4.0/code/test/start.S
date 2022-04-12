@@ -164,7 +164,7 @@ Join:
 	.globl Create
 	.ent	Create
 Create:
-	addiu $2,$0,SC_Create
+	addiu $2,$0,SC_CreateFile
 	syscall
 	j	$31
 	.end Create
@@ -180,7 +180,7 @@ Remove:
 	.globl Open
 	.ent	Open
 Open:
-	addiu $2,$0,SC_Open
+	addiu $2,$0,SC_OpenFile
 	syscall
 	j	$31
 	.end Open
@@ -204,7 +204,7 @@ Write:
 	.globl Close
 	.ent	Close
 Close:
-	addiu $2,$0,SC_Close
+	addiu $2,$0,SC_CloseFile
 	syscall
 	j	$31
 	.end Close
