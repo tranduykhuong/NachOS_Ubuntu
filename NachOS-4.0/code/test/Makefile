@@ -112,7 +112,7 @@ ifeq ($(hosttype),unknown)
 PROGRAMS = unknownhost
 else
 # change this if you create a new test program!
-PROGRAMS = add multi halt shell matmult sort segments num_io readstr printstr readchar printchar randomnum bubblesort help ascii
+PROGRAMS = halt shell matmult sort segments create open read_write remove
 endif
 
 all: $(PROGRAMS)
@@ -178,6 +178,13 @@ readstr: readstr.o start.o
 	$(LD) $(LDFLAGS) start.o readstr.o -o readstr.coff
 	$(COFF2NOFF) readstr.coff readstr
 
+createfile.o: createfile.c
+	$(CC) $(CFLAGS) -c createfile.c
+
+createfile: createfile.o start.o
+	$(LD) $(LDFLAGS) start.o createfile.o -o createfile.coff
+	$(COFF2NOFF) createfile.coff createfile
+
 printstr.o: printstr.c
 	$(CC) $(CFLAGS) -c printstr.c
 
@@ -205,6 +212,29 @@ bubblesort: bubblesort.o start.o
 	$(LD) $(LDFLAGS) start.o bubblesort.o -o bubblesort.coff
 	$(COFF2NOFF) bubblesort.coff bubblesort
 
+create.o: create.c
+	$(CC) $(CFLAGS) -c create.c
+create: create.o start.o
+	$(LD) $(LDFLAGS) start.o create.o -o create.coff
+	$(COFF2NOFF) create.coff create
+
+open.o: open.c
+	$(CC) $(CFLAGS) -c open.c
+open: open.o start.o
+	$(LD) $(LDFLAGS) start.o open.o -o open.coff
+	$(COFF2NOFF) open.coff open
+
+read_write.o: read_write.c
+	$(CC) $(CFLAGS) -c read_write.c
+read_write: read_write.o start.o
+	$(LD) $(LDFLAGS) start.o read_write.o -o read_write.coff
+	$(COFF2NOFF) read_write.coff read_write
+
+remove.o: remove.c
+	$(CC) $(CFLAGS) -c remove.c
+remove: remove.o start.o
+	$(LD) $(LDFLAGS) start.o remove.o -o remove.coff
+	$(COFF2NOFF) remove.coff remove
 
 shell.o: shell.c
 	$(CC) $(CFLAGS) -c shell.c

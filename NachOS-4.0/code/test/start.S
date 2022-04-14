@@ -164,7 +164,7 @@ Join:
 	.globl Create
 	.ent	Create
 Create:
-	addiu $2,$0,SC_Create
+	addiu $2,$0,SC_CreateFile
 	syscall
 	j	$31
 	.end Create
@@ -172,7 +172,7 @@ Create:
 	.globl Remove
 	.ent	Remove
 Remove:
-	addiu $2,$0,SC_Remove
+	addiu $2,$0,SC_RemoveFile
 	syscall
 	j	$31
 	.end Remove
@@ -180,7 +180,7 @@ Remove:
 	.globl Open
 	.ent	Open
 Open:
-	addiu $2,$0,SC_Open
+	addiu $2,$0,SC_OpenFile
 	syscall
 	j	$31
 	.end Open
@@ -188,7 +188,7 @@ Open:
 	.globl Read
 	.ent	Read
 Read:
-	addiu $2,$0,SC_Read
+	addiu $2,$0,SC_ReadFile
 	syscall
 	j	$31
 	.end Read
@@ -196,7 +196,7 @@ Read:
 	.globl Write
 	.ent	Write
 Write:
-	addiu $2,$0,SC_Write
+	addiu $2,$0,SC_WriteFile
 	syscall
 	j	$31
 	.end Write
@@ -204,7 +204,7 @@ Write:
 	.globl Close
 	.ent	Close
 Close:
-	addiu $2,$0,SC_Close
+	addiu $2,$0,SC_CloseFile
 	syscall
 	j	$31
 	.end Close
@@ -212,7 +212,7 @@ Close:
 	.globl Seek
 	.ent	Seek
 Seek:
-	addiu $2,$0,SC_Seek
+	addiu $2,$0,SC_SeekFile
 	syscall
 	j	$31
 	.end Seek

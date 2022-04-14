@@ -46,6 +46,15 @@
 
 #define SC_Multi 50
 
+#define SC_CreateFile 51
+#define SC_OpenFile 52
+#define SC_CloseFile 53
+#define SC_ReadFile 54
+#define SC_WriteFile 55
+#define SC_SeekFile 56
+#define SC_RemoveFile 57
+
+
 #ifndef IN_ASM
 
 /* The system call interface.  These are the operations the Nachos
@@ -82,6 +91,7 @@ int RandomNum();
 
 /* ReadString*/
 void ReadStr(char* buffer,int size);
+
 /*PrintString*/
 void PrintSrt(char* buffer);
 
@@ -167,7 +177,7 @@ int Read(char *buffer, int size, OpenFileId id);
 int Seek(int position, OpenFileId id);
 
 /* Close the file, we're done reading and writing to it.
- * Return 1 on success, negative error code on failure
+ * Return 0 on success, negative error code on failure
  */
 int Close(OpenFileId id);
 

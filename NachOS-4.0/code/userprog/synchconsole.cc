@@ -53,6 +53,18 @@ SynchConsoleInput::GetChar()
     return ch;
 }
 
+int SynchConsoleInput::GetString(char *buffer, int size) {
+    int i;
+    for (i = 0; i < size; ++i) {
+        buffer[i] = GetChar();
+        if (buffer[i] == '\n') {
+            buffer[i] = 0;
+            break;
+        }
+    }
+    return size < i + 1 ? size : i+1;
+}
+
 //----------------------------------------------------------------------
 // SynchConsoleInput::CallBack
 //      Interrupt handler called when keystroke is hit; wake up
@@ -104,6 +116,13 @@ SynchConsoleOutput::PutChar(char ch)
     consoleOutput->PutChar(ch);
     waitFor->P();
     lock->Release();
+}
+
+
+int SynchConsoleOutput::PutString(char *buffer, int size) {
+    for (int i = 0; i < size; ++i) 
+        PutChar(buffer[i]);
+    return size;
 }
 
 //----------------------------------------------------------------------

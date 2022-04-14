@@ -188,4 +188,50 @@ void SysPrintStr(char *buffer, int length)
     kernel->synchConsoleOut->PutChar(buffer[i]);
 }
 
+// Check whether can create file or not
+int SysCreate(char *fileName)
+{
+  int length = strlen(fileName);
+  if (length == 0)
+  {
+    DEBUG(dbgSys, "\nFile's name can't be empty!");
+    return 0;
+  }
+  else
+  {
+    DEBUG(dbgSys, "\n Finish reading filename.");
+    if (!kernel->fileSystem->Create(fileName))
+    {
+      DEBUG(dbgSys, "\nError creating file");
+      return 0;
+    }
+    else
+    {
+      return 1;
+    }
+  }
+}
+
+int SysReadFile(char *buffer, int numBytesChar, int fileId)
+{
+  if (fileId < 0 || fileId == 1)
+    return -1;
+  if (fileId == 0)
+    return kernel->synchConsoleIn->GetString(buffer, numBytesChar);
+  int size = kernel->fileSystem->Read(buffer, numBytesChar, fileId);
+  buffer[size] = '\0';
+
+  return size;
+}
+
+int SysWriteFile(char *buffer, int numBytesChar, int fileId)
+{
+	if (fileId < 1)
+		return -1;
+	if (fileId == 1)
+		return kernel->synchConsoleOut->PutString(buffer, numBytesChar);
+
+	return kernel->fileSystem->Write(buffer, numBytesChar, fileId);
+}
+
 #endif /* ! __USERPROG_KSYSCALL_H__ */

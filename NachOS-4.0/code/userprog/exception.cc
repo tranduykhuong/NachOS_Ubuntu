@@ -177,6 +177,98 @@ void SyscallPrintString_Handler()
 	NextPC();
 }
 
+/**********************************************/
+void SyscallCreateFile_Handler()
+{
+	int virAddress;
+	char *fileName;
+	virAddress = kernel->machine->ReadRegister(4);
+	fileName = User2System(virAddress);
+	if (SysCreate(fileName))
+		kernel->machine->WriteRegister(2, 0);
+	else
+		kernel->machine->WriteRegister(2, -1);
+	delete[] fileName;
+	NextPC();
+}
+
+void SyscallOpenFile_Handler()
+{
+	int virAddress;
+	char *fileName;
+	virAddress = kernel->machine->ReadRegister(4);
+	int idFile;
+	fileName = User2System(virAddress);
+	idFile = (int)kernel->fileSystem->openFile(fileName);
+	kernel->machine->WriteRegister(2, idFile);
+	delete[] fileName;
+	NextPC();
+}
+
+void SyscallCloseFile_Handler()
+{
+	int idFile, flag;
+	idFile = kernel->machine->ReadRegister(4);
+	flag = kernel->fileSystem->Close(idFile);
+	kernel->machine->WriteRegister(2, flag);
+	NextPC();
+}
+
+void SyscallReadFile_Handler()
+{
+	int address = kernel->machine->ReadRegister(4);
+	int numCharCount = kernel->machine->ReadRegister(5);
+	int fileId = kernel->machine->ReadRegister(6);
+	char *buffer = User2System(address);
+
+	kernel->machine->WriteRegister(2, SysReadFile(buffer, numCharCount, fileId));
+	buffer[numCharCount] = '\0';
+	System2User(buffer, address);
+
+	delete[] buffer;
+	return NextPC();
+}
+
+void SyscallWriteFile_Handler()
+{
+	int address = kernel->machine->ReadRegister(4);
+	int numCharCount = kernel->machine->ReadRegister(5);
+	int fileId = kernel->machine->ReadRegister(6);
+	char *buffer = User2System(address);
+
+	kernel->machine->WriteRegister(2, SysWriteFile(buffer, numCharCount, fileId));
+	System2User(buffer, address, numCharCount);
+
+	delete[] buffer;
+	return NextPC();
+}
+
+void SyscallRemoveFile_Handler()
+{
+	char *fileName;
+	int virAddress = kernel->machine->ReadRegister(4);
+	fileName = User2System(virAddress);
+	kernel->machine->WriteRegister(2, (int)kernel->fileSystem->Remove(fileName));
+	delete[] fileName;
+	NextPC();
+}
+
+void SyscallSeekFile_Handler()
+{
+	int position = kernel->machine->ReadRegister(4);
+	int id = kernel->machine->ReadRegister(5);
+	int flag;
+	if (id <= 1) // if file's id is 0 or 1 (console IO), return -1
+	{
+		DEBUG(dbgSys, "\nCan't seek in console");
+		flag = -1;
+	}
+	else
+		flag = kernel->fileSystem->Seek(position, id);
+	kernel->machine->WriteRegister(2, flag); // return the position that file pointer is standing
+	NextPC();
+}
+
 void ExceptionHandler(ExceptionType which)
 {
 	int type = kernel->machine->ReadRegister(2);
@@ -191,47 +283,47 @@ void ExceptionHandler(ExceptionType which)
 		break;
 
 	case PageFaultException:
-        DEBUG('a', "\nNo valid translation found.");
-        printf("\n\nNo valid translation found.");
-        SysHalt();
+		DEBUG('a', "\nNo valid translation found.");
+		printf("\n\nNo valid translation found.");
+		SysHalt();
 		ASSERTNOTREACHED();
-        break;
-    case ReadOnlyException:
-        DEBUG('a', "\nWrite attempted to page marked \"read-only\".");
-        printf("\n\nWrite attempted to page marked \"read-only\".");
-        SysHalt();
+		break;
+	case ReadOnlyException:
+		DEBUG('a', "\nWrite attempted to page marked \"read-only\".");
+		printf("\n\nWrite attempted to page marked \"read-only\".");
+		SysHalt();
 		ASSERTNOTREACHED();
-        break;
-    case BusErrorException:
-        DEBUG('a', "\nTranslation resulted in an invalid physical address.");
-        printf("\n\nTranslation resulted in an invalid physical address.");
-        SysHalt();
+		break;
+	case BusErrorException:
+		DEBUG('a', "\nTranslation resulted in an invalid physical address.");
+		printf("\n\nTranslation resulted in an invalid physical address.");
+		SysHalt();
 		ASSERTNOTREACHED();
-        break;
-    case AddressErrorException:
-        DEBUG('a', "\nUnaligned reference or one that was beyond the end of the address space.");
-        printf("\n\nUnaligned reference or one that was beyond the end of the address space.");
-        SysHalt();
+		break;
+	case AddressErrorException:
+		DEBUG('a', "\nUnaligned reference or one that was beyond the end of the address space.");
+		printf("\n\nUnaligned reference or one that was beyond the end of the address space.");
+		SysHalt();
 		ASSERTNOTREACHED();
-        break;
-    case OverflowException:
-        DEBUG('a', "\nInteger overflow in add or sum.");
-        printf("\n\nInteger overflow in add or sum.");
-        SysHalt();
+		break;
+	case OverflowException:
+		DEBUG('a', "\nInteger overflow in add or sum.");
+		printf("\n\nInteger overflow in add or sum.");
+		SysHalt();
 		ASSERTNOTREACHED();
-        break;
-    case IllegalInstrException:
-        DEBUG('a', "\nUnimplemented or reserved instr.");
-        printf("\n\nUnimplemented or reserved instr.");
-        SysHalt();
+		break;
+	case IllegalInstrException:
+		DEBUG('a', "\nUnimplemented or reserved instr.");
+		printf("\n\nUnimplemented or reserved instr.");
+		SysHalt();
 		ASSERTNOTREACHED();
-        break;
-    case NumExceptionTypes:
+		break;
+	case NumExceptionTypes:
 		DEBUG('a', "\nNumber exception.");
-        printf("\n\nNumber exception.");
-        SysHalt();
+		printf("\n\nNumber exception.");
+		SysHalt();
 		ASSERTNOTREACHED();
-        break;
+		break;
 
 	case SyscallException:
 		switch (type)
@@ -338,6 +430,48 @@ void ExceptionHandler(ExceptionType which)
 
 		case SC_PrintStr:
 			SyscallPrintString_Handler();
+			return;
+			ASSERTNOTREACHED();
+			break;
+
+		case SC_CreateFile:
+			SyscallCreateFile_Handler();
+			return;
+			ASSERTNOTREACHED();
+			break;
+
+		case SC_OpenFile:
+			SyscallOpenFile_Handler();
+			return;
+			ASSERTNOTREACHED();
+			break;
+
+		case SC_CloseFile:
+			SyscallCloseFile_Handler();
+			return;
+			ASSERTNOTREACHED();
+			break;
+
+		case SC_ReadFile:
+			SyscallReadFile_Handler();
+			return;
+			ASSERTNOTREACHED();
+			break;
+
+		case SC_WriteFile:
+			SyscallWriteFile_Handler();
+			return;
+			ASSERTNOTREACHED();
+			break;
+
+		case SC_SeekFile:
+			SyscallSeekFile_Handler();
+			return;
+			ASSERTNOTREACHED();
+			break;
+
+		case SC_RemoveFile:
+			SyscallRemoveFile_Handler();
 			return;
 			ASSERTNOTREACHED();
 			break;
