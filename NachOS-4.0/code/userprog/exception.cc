@@ -219,7 +219,7 @@ void SyscallReadFile_Handler()
 	int address = kernel->machine->ReadRegister(4);
 	int numCharCount = kernel->machine->ReadRegister(5);
 	int fileId = kernel->machine->ReadRegister(6);
-	char *buffer = User2System(address);
+	char *buffer = new char[numCharCount];
 
 	kernel->machine->WriteRegister(2, SysReadFile(buffer, numCharCount, fileId));
 	buffer[numCharCount] = '\0';
