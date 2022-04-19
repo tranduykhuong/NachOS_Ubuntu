@@ -175,9 +175,28 @@ int SysRandomNum()
 char *SysReadStr(int size)
 {
   char *buffer = new char[size + 1];
-  for (int i = 0; i < size; i++)
-    buffer[i] = kernel->synchConsoleIn->GetChar();
-  buffer[size] = '\0';
+  int i = 0;
+  for (i; i < size; i++) {
+    char c = kernel->synchConsoleIn->GetChar();
+    buffer[i] = c;
+    if (c=='\n')
+      break;
+  }
+  buffer[i] = '\0';
+
+  return buffer;
+}
+
+char *SysReadString()
+{
+  char *buffer = new char[255];
+  char c;
+  int i = 0;
+  do {
+    c = kernel->synchConsoleIn->GetChar();
+    buffer[i++] = c;
+  } while(c!='\n');
+  buffer[--i] = '\0';
 
   return buffer;
 }

@@ -54,7 +54,7 @@
 #     compiled user program are, and where in the address space
 #     coff2noff is going to place them.   This information is also
 #     recorded in the header of the executable file that coff2noff
-#     creates.  See the method AddrSpace::Load (in userprog/addrspace.cc)
+#     files.  See the method AddrSpace::Load (in userprog/addrspace.cc)
 #     for an example of how this header is used by the Nachos OS to set up the
 #     address space for a new process that will run the executable.
 #
@@ -111,8 +111,8 @@ CFLAGS = -G 0 -c $(INCDIR) -B../../../usr/local/nachos/lib/gcc-lib/decstation-ul
 ifeq ($(hosttype),unknown)
 PROGRAMS = unknownhost
 else
-# change this if you create a new test program!
-PROGRAMS = halt shell matmult sort segments create open read_write remove
+# change this if you file a new test program!
+PROGRAMS = halt shell matmult sort segments help ascii bubblesort randomnum num_io char_io string_io createfile cat delete copy concatenate
 endif
 
 all: $(PROGRAMS)
@@ -149,19 +149,12 @@ num_io: num_io.o start.o
 	$(COFF2NOFF) num_io.coff num_io
 
 
-readchar.o: readchar.c
-	$(CC) $(CFLAGS) -c readchar.c
+char_io.o: char_io.c
+	$(CC) $(CFLAGS) -c char_io.c
 
-readchar: readchar.o start.o
-	$(LD) $(LDFLAGS) start.o readchar.o -o readchar.coff
-	$(COFF2NOFF) readchar.coff readchar
-
-printchar.o: printchar.c
-	$(CC) $(CFLAGS) -c printchar.c
-
-printchar: printchar.o start.o
-	$(LD) $(LDFLAGS) start.o printchar.o -o printchar.coff
-	$(COFF2NOFF) printchar.coff printchar
+char_io: char_io.o start.o
+	$(LD) $(LDFLAGS) start.o char_io.o -o char_io.coff
+	$(COFF2NOFF) char_io.coff char_io
 
 randomnum.o: randomnum.c
 	$(CC) $(CFLAGS) -c randomnum.c
@@ -171,26 +164,19 @@ randomnum: randomnum.o start.o
 	$(COFF2NOFF) randomnum.coff randomnum
 
 
-readstr.o: readstr.c
-	$(CC) $(CFLAGS) -c readstr.c
+string_io.o: string_io.c
+	$(CC) $(CFLAGS) -c string_io.c
 
-readstr: readstr.o start.o
-	$(LD) $(LDFLAGS) start.o readstr.o -o readstr.coff
-	$(COFF2NOFF) readstr.coff readstr
+string_io: string_io.o start.o
+	$(LD) $(LDFLAGS) start.o string_io.o -o string_io.coff
+	$(COFF2NOFF) string_io.coff string_io
 
-createfile.o: createfile.c
-	$(CC) $(CFLAGS) -c createfile.c
+filefile.o: filefile.c
+	$(CC) $(CFLAGS) -c filefile.c
 
-createfile: createfile.o start.o
-	$(LD) $(LDFLAGS) start.o createfile.o -o createfile.coff
-	$(COFF2NOFF) createfile.coff createfile
-
-printstr.o: printstr.c
-	$(CC) $(CFLAGS) -c printstr.c
-
-printstr: printstr.o start.o
-	$(LD) $(LDFLAGS) start.o printstr.o -o printstr.coff
-	$(COFF2NOFF) printstr.coff printstr
+filefile: filefile.o start.o
+	$(LD) $(LDFLAGS) start.o filefile.o -o filefile.coff
+	$(COFF2NOFF) filefile.coff filefile
 
 help.o: help.c
 	$(CC) $(CFLAGS) -c help.c
@@ -212,29 +198,41 @@ bubblesort: bubblesort.o start.o
 	$(LD) $(LDFLAGS) start.o bubblesort.o -o bubblesort.coff
 	$(COFF2NOFF) bubblesort.coff bubblesort
 
-create.o: create.c
-	$(CC) $(CFLAGS) -c create.c
-create: create.o start.o
-	$(LD) $(LDFLAGS) start.o create.o -o create.coff
-	$(COFF2NOFF) create.coff create
+file.o: file.c
+	$(CC) $(CFLAGS) -c file.c
+file: file.o start.o
+	$(LD) $(LDFLAGS) start.o file.o -o file.coff
+	$(COFF2NOFF) file.coff file
 
-open.o: open.c
-	$(CC) $(CFLAGS) -c open.c
-open: open.o start.o
-	$(LD) $(LDFLAGS) start.o open.o -o open.coff
-	$(COFF2NOFF) open.coff open
+createfile.o: createfile.c
+	$(CC) $(CFLAGS) -c createfile.c
+createfile: createfile.o start.o
+	$(LD) $(LDFLAGS) start.o createfile.o -o createfile.coff
+	$(COFF2NOFF) createfile.coff createfile
 
-read_write.o: read_write.c
-	$(CC) $(CFLAGS) -c read_write.c
-read_write: read_write.o start.o
-	$(LD) $(LDFLAGS) start.o read_write.o -o read_write.coff
-	$(COFF2NOFF) read_write.coff read_write
+delete.o: delete.c
+	$(CC) $(CFLAGS) -c delete.c
+delete: delete.o start.o
+	$(LD) $(LDFLAGS) start.o delete.o -o delete.coff
+	$(COFF2NOFF) delete.coff delete
 
-remove.o: remove.c
-	$(CC) $(CFLAGS) -c remove.c
-remove: remove.o start.o
-	$(LD) $(LDFLAGS) start.o remove.o -o remove.coff
-	$(COFF2NOFF) remove.coff remove
+cat.o: cat.c
+	$(CC) $(CFLAGS) -c cat.c
+cat: cat.o start.o
+	$(LD) $(LDFLAGS) start.o cat.o -o cat.coff
+	$(COFF2NOFF) cat.coff cat
+
+copy.o: copy.c
+	$(CC) $(CFLAGS) -c copy.c
+copy: copy.o start.o
+	$(LD) $(LDFLAGS) start.o copy.o -o copy.coff
+	$(COFF2NOFF) copy.coff copy
+
+concatenate.o: concatenate.c
+	$(CC) $(CFLAGS) -c concatenate.c
+concatenate: concatenate.o start.o
+	$(LD) $(LDFLAGS) start.o concatenate.o -o concatenate.coff
+	$(COFF2NOFF) concatenate.coff concatenate
 
 shell.o: shell.c
 	$(CC) $(CFLAGS) -c shell.c

@@ -54,6 +54,7 @@
 #define SC_SeekFile 56
 #define SC_RemoveFile 57
 
+#define SC_ReadString		58
 
 #ifndef IN_ASM
 
@@ -91,6 +92,7 @@ int RandomNum();
 
 /* ReadString*/
 void ReadStr(char* buffer,int size);
+void ReadString(char* buffer);
 
 /*PrintString*/
 void PrintSrt(char* buffer);

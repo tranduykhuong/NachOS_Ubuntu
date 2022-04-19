@@ -138,7 +138,7 @@ void NextPC()
 	kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg) + 4);
 }
 
-void SyscallReadString_Handler()
+void SyscallReadStr_Handler()
 {
 	int addStr;
 	addStr = (int)kernel->machine->ReadRegister(4); // Đọc địa chỉ của chuỗi từ thanh ghi
@@ -155,6 +155,21 @@ void SyscallReadString_Handler()
 	// Xử lí SysReadStr
 	char *buff;
 	buff = SysReadStr(length);
+	System2User(buff, addStr); // chuyển đổi chuỗi hệ thống thành chuỗi người dùng
+	delete[] buff;			   // xóa vùng nhớ để tránh bị rò rỉ
+
+	/* Modify return point */
+	NextPC();
+}
+
+void SyscallReadString_Handler()
+{
+	int addStr;
+	addStr = (int)kernel->machine->ReadRegister(4); // Đọc địa chỉ của chuỗi từ thanh ghi
+	
+	// Xử lí SysReadStr
+	char *buff;
+	buff = SysReadString();
 	System2User(buff, addStr); // chuyển đổi chuỗi hệ thống thành chuỗi người dùng
 	delete[] buff;			   // xóa vùng nhớ để tránh bị rò rỉ
 
@@ -219,12 +234,14 @@ void SyscallReadFile_Handler()
 	int address = kernel->machine->ReadRegister(4);
 	int numCharCount = kernel->machine->ReadRegister(5);
 	int fileId = kernel->machine->ReadRegister(6);
-	char *buffer = User2System(address);
+	char *buffer = new char[numCharCount];
 
-	kernel->machine->WriteRegister(2, SysReadFile(buffer, numCharCount, fileId));
+	int size = SysReadFile(buffer, numCharCount, fileId);
+	// cerr << size;
+	kernel->machine->WriteRegister(2, size);
 	buffer[numCharCount] = '\0';
 	System2User(buffer, address);
-
+	// cerr << buffer;
 	delete[] buffer;
 	return NextPC();
 }
@@ -423,6 +440,12 @@ void ExceptionHandler(ExceptionType which)
 		}
 
 		case SC_ReadStr:
+			SyscallReadStr_Handler();
+			return;
+			ASSERTNOTREACHED();
+			break;
+
+		case SC_ReadString:
 			SyscallReadString_Handler();
 			return;
 			ASSERTNOTREACHED();
